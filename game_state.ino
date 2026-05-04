@@ -5,8 +5,8 @@
  */
 void SettingFunc()
 {
-    bool activate_bool = false;
-    SendCmd("page ready");
+    activate_bool = false;
+    sendCommand("page pgSetting");
     NeoFunc = NeoNo;
     lightColor(pixels_round, white);
     lightColor(pixels_side, white);
@@ -19,8 +19,8 @@ void SettingFunc()
 
 void ReadyFunc()
 {
-    bool activate_bool = false;
-    SendCmd("page ready");
+    activate_bool = false;
+    sendCommand("page pgInfo");
     NeoFunc = NeoBeforeTagger;
 }
 
@@ -48,7 +48,7 @@ void DataChange()
         return;
     }
 
-    static StaticJsonDocument<1000> cur;
+    static StaticJsonDocument<2048> cur;
 
     String cmd;
 
@@ -81,21 +81,22 @@ void DataChange()
     {
         if ((String)(const char *)my["device_state"] == "activate")
         {
-            SendCmd("page basic");
+            sendCommand("page pgChipCount");
             NeoFunc = NeoGaming;
         }
         else if ((String)(const char *)my["device_state"] == "player_win")
         {
-            SendCmd("page lose");
+            sendCommand("page pgTaggerLose");
             NeoFunc = NeoLose;
         }
         else if ((String)(const char *)my["device_state"] == "player_lose")
         {
-            SendCmd("page win");
+            sendCommand("page pgTaggerWin");
             NeoFunc = NeoWin;
         }
         else if ((String)(const char *)my["device_state"] == "blink")
         {
+            sendCommand("page pgAltarTag");
             NeoFunc = NeoTagger;
             activate_bool = true;
         }
@@ -105,11 +106,17 @@ void DataChange()
         }
     }
 
-    if ((int)my["taken_chip"] != (int)cur["taken_chip"])
+    if((int)my["taken_chip"] != (int)cur["taken_chip"])
     {
-        cmd = "taken_chip.pic=4+" + (String)(const char *)my["taken_chip"];
+        cmd = "pgChipCount.vSacrificeChip.val=" + (String)(int)my["taken_chip"];
         sendCommand(cmd.c_str());
     }
+    if((int)my["max_taken_chip"] != (int)cur["max_taken_chip"])
+    {
+        cmd = "pgChipCount.vMaxChip.val=" + (String)(int)my["max_taken_chip"];
+        sendCommand(cmd.c_str());
+    }
+    SyncLanguage();
 
     Serial.println("Data Change");
     cur = my;

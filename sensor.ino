@@ -401,6 +401,7 @@ void NeoLose()
 
     NeoFunc = NeoNo;
   }
+  delay(lose_neo_delay);
 }
 
 void NeoArrow()
