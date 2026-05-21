@@ -37,6 +37,7 @@ int NextionGetNum(const char *cmd);
 void NextionInit();
 void SyncLanguage();
 void SendCmd(String command);
+void PlayAltarActivateVoice();
 
 //* =============================== Sensor =============================== *
 /**
@@ -55,6 +56,7 @@ bool send_nfc_err = false;
 void RfidInit(void);
 void RfidLoop(void);
 void CardChecking(uint8_t rfidData[32]);
+String GetRoleFromName(const String &deviceName);
 
 //=============================== Neopixel ===============================
 // TODO 네오픽셀 개수 확인

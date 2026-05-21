@@ -22,6 +22,16 @@ void NextionReceived(String *nextion_string)
 }
 
 /**
+ * @brief 제단 활성화 시 Nextion 음성 출력
+ *        Nextion HMI의 pgAltarTag.vAudioPlay 변수를 1로 설정하면
+ *        HMI 내 이벤트에서 "제단이 활성화되었습니다." 음성 재생
+ */
+void PlayAltarActivateVoice()
+{
+    sendCommand("pgAltarTag.vAudioPlay.val=1");
+}
+
+/**
  * @brief get 명령으로 Nextion 숫자 변수를 읽음
  *        성공시 값 반환, 실패시 -1 반환 (0x71 응답 파싱)
  */

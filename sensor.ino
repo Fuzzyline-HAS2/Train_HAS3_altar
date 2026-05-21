@@ -60,6 +60,21 @@ void RfidLoop()
 }
 
 /**
+ * @brief 장치 이름(예: G9P1)에서 카드 역할을 고정 결정
+ *        P1=술래, P2=유령, P3~P8=생존자
+ */
+String GetRoleFromName(const String &deviceName)
+{
+  int pIdx = deviceName.indexOf('P');
+  if (pIdx < 0) return "unknown";
+  int num = deviceName.substring(pIdx + 1).toInt();
+  if (num == 1) return "tagger";
+  if (num == 2) return "ghost";
+  if (num >= 3 && num <= 8) return "survivor";
+  return "unknown";
+}
+
+/**
  * @brief RFID에 태그된 NFC의 데이터에 따른 코드 동작
  *
  * @param rfidData 태그된 NFC의 데이터
@@ -72,11 +87,15 @@ void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확�
     tagUser += (char)rfidData[i];
   Serial.println("tag_user_data : " + tagUser);
 
-  // 1. 태그한 플레이어의 역할과 생명칩갯수, 최대생명칩갯수 등 읽어오기
+  // 1. 태그한 플레이어 정보 읽어오기
   has2wifi.Receive(tagUser);
 
-  // 2. 술래인지, 플레이어인지 구분
-  if ((String)(const char *)my["game_state"] == "activate" && (String)(const char *)my["device_state"] == "blink" && (String)(const char *)tag["role"] == "tagger" && (String)(const char *)tag["device_state"] == "blink")
+  // 2. 장치 이름 기반으로 역할 고정 결정
+  String tagRole = GetRoleFromName(tagUser);
+  Serial.println("tag_role : " + tagRole);
+
+  // 3. 술래 카드 태그 시 조건 없이 제단 활성화
+  if ((String)(const char *)my["game_state"] == "activate" && (String)(const char *)my["device_state"] == "blink" && tagRole == "tagger")
   {
     NeoFunc = NeoNo;
 
@@ -96,6 +115,8 @@ void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확�
     lightColor(pixels_side, purple);
     lightColor(pixels_square, purple);
 
+    PlayAltarActivateVoice();
+
     has2wifi.Send((String)(const char *)my["device_name"], "device_state", "activate");
     has2wifi.Send((String)(const char *)tag["device_name"], "device_state", "activate");
 
@@ -103,18 +124,15 @@ void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확�
     String tagger_group = tagger_name.substring(0, 2);
     for (int i = 1; i < 9; ++i)
     {
-      // TODO 전체 플레이어에게 술래 정보를 전달
       String player_name = tagger_group + "P" + String(i);
       Serial.println(player_name);
       has2wifi.Send(player_name, "tagger_name", tagger_name);
     }
   }
 
-  if ((String)(const char *)tag["role"] == "tagger" && (int)tag["taken_chip"] > 0)
+  // 4. 술래 카드 태그 시 조건 없이 제단에 생명 바쳐짐
+  if (tagRole == "tagger")
   {
-    // if(RfidNsecTag(2))
-    // {
-    // 3. 태그한 사용자가 술래이면서 빼앗은 칩을 1개 이상 가지고 있다면
     NeoFunc = NeoNo;
     for (int i = 0; i < NUMPIXELS_ROUND; i++)
     {
@@ -138,7 +156,6 @@ void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확�
 
     NeoFunc = NeoGaming;
   }
-  //}
 }
 
 bool RfidNsecTag(int sec)
