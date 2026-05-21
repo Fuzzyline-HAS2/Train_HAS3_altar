@@ -1,4 +1,4 @@
-#include "updated_temple.h"
+#include "Train_HAS3_altar.h"
 
 /**
  * @brief DB gamestate가 setting 일 때 한번동작하는 코드

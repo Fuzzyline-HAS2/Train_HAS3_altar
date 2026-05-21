@@ -1,4 +1,4 @@
-#include "updated_temple.h"
+#include "Train_HAS3_altar.h"
 
 /**
  * @brief 디스플레이에 변화를 주거나 변화가 있을시 실행

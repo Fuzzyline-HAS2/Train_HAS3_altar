@@ -1,5 +1,5 @@
-#ifndef _UPDATED_TEMPLE_H_
-#define _UPDATED_TEMPLE_H_
+#ifndef _TRAIN_HAS3_ALTAR_H_
+#define _TRAIN_HAS3_ALTAR_H_
 
 #include "library_and_pin.h"
 

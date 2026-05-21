@@ -1,5 +1,5 @@
 /**
- * @file updated_temple.ino
+ * @file Train_HAS3_altar.ino
  * @author YuBin Kim
  * @brief
  * @version 0.1
@@ -9,7 +9,7 @@
  */
 
 #define FIRMWARE_VER 3
-#include "updated_temple.h"
+#include "Train_HAS3_altar.h"
 
 //************************************************ Core1 ********************************************************************
 /**
