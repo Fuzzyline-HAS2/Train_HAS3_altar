@@ -95,7 +95,7 @@ void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확�
   Serial.println("tag_role : " + tagRole);
 
   // 3. 술래 카드 태그 시 조건 없이 제단 활성화
-  if ((String)(const char *)my["game_state"] == "activate" && (String)(const char *)my["device_state"] == "blink" && tagRole == "tagger")
+  if (tagRole == "tagger")
   {
     NeoFunc = NeoNo;
 
@@ -117,8 +117,8 @@ void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확�
 
     PlayAltarActivateVoice();
 
+    has2wifi.Send((String)(const char *)my["device_name"], "game_state", "activate");
     has2wifi.Send((String)(const char *)my["device_name"], "device_state", "activate");
-    has2wifi.Send((String)(const char *)tag["device_name"], "device_state", "activate");
 
     String tagger_name = (String)(const char *)tag["device_name"];
     String tagger_group = tagger_name.substring(0, 2);
@@ -128,12 +128,8 @@ void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확�
       Serial.println(player_name);
       has2wifi.Send(player_name, "tagger_name", tagger_name);
     }
-  }
 
   // 4. 술래 카드 태그 시 조건 없이 제단에 생명 바쳐짐
-  if (tagRole == "tagger")
-  {
-    NeoFunc = NeoNo;
     for (int i = 0; i < NUMPIXELS_ROUND; i++)
     {
       if (i == 0)
@@ -147,8 +143,6 @@ void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확�
     }
 
     has2wifi.Send((String)(const char *)my["device_name"], "taken_chip", "+1");
-    has2wifi.Send((String)(const char *)tag["device_name"], "taken_chip", "-1");
-    has2wifi.Send((String)(const char *)tag["device_name"], "exp", "+100");
 
     pixels_round.clear();
     pixels_side.clear();

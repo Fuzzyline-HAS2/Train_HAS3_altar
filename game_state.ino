@@ -32,11 +32,10 @@ void ActivateFunc()
     RfidLoop();
 }
 
-/**
- * @brief DB gamestate가 activate 일 때 한번동작하는 코드
- */
-void ActivateRunOnce()
+void EnterAltarBlinkState()
 {
+    sendCommand("page pgAltarTag");
+    NeoFunc = NeoTagger;
     activate_bool = true;
 }
 
@@ -60,6 +59,9 @@ void DataChange()
         {
             if (brightness_changed) applyBrightness();
             SettingFunc();
+            EnterAltarBlinkState();
+            has2wifi.Send((String)(const char *)my["device_name"], "game_state", "activate");
+            has2wifi.Send((String)(const char *)my["device_name"], "device_state", "blink");
         }
         else if ((String)(const char *)my["game_state"] == "ready")
         {
@@ -69,7 +71,7 @@ void DataChange()
         else if ((String)(const char *)my["game_state"] == "activate")
         {
             if (brightness_changed) applyBrightness();
-            ActivateRunOnce();
+            activate_bool = true;
         }
     }
     else if (brightness_changed)
@@ -96,9 +98,7 @@ void DataChange()
         }
         else if ((String)(const char *)my["device_state"] == "blink")
         {
-            sendCommand("page pgAltarTag");
-            NeoFunc = NeoTagger;
-            activate_bool = true;
+            EnterAltarBlinkState();
         }
         else if ((String)(const char *)my["device_state"] == "github")
         {
@@ -108,8 +108,18 @@ void DataChange()
 
     if((int)my["taken_chip"] != (int)cur["taken_chip"])
     {
-        cmd = "pgChipCount.vSacrificeChip.val=" + (String)(int)my["taken_chip"];
+        int takenChip = (int)my["taken_chip"];
+
+        cmd = "pgChipCount.vSacrificeChip.val=" + String(takenChip);
         sendCommand(cmd.c_str());
+        SyncLanguage();
+
+        if (takenChip >= 1 && takenChip <= 10)
+        {
+            int vid = takenChip * 2 + nextion_language;
+            cmd = "play 0," + String(vid) + ",0";
+            sendCommand(cmd.c_str());
+        }
     }
     if((int)my["max_taken_chip"] != (int)cur["max_taken_chip"])
     {
