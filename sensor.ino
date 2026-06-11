@@ -65,6 +65,8 @@ void RfidLoop()
  */
 String GetRoleFromName(const String &deviceName)
 {
+  // Temporary test card override.
+  if (deviceName == "G2P2") return "tagger";
   if (!deviceName.startsWith("G9P")) return "unknown";
   int num = deviceName.substring(3).toInt();
   if (num == 1) return "tagger";

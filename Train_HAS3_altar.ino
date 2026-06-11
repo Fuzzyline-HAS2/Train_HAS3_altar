@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2022
  */
 
-#define FIRMWARE_VER 4
+#define FIRMWARE_VER 5
 #include "Train_HAS3_altar.h"
 
 //************************************************ Core1 ********************************************************************
