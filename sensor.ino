@@ -85,7 +85,7 @@ void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확�
   String tagUser = "";
   static String cur_tag_user = "";
   static uint32_t cur_tag_time = 0;
-  for (int i = 0; i < 4; i++) // GxPx 데이터만 배열에서 추출해서 string으로 저장
+  for (int i = 0; i < 4; i++)
     tagUser += (char)rfidData[i];
   Serial.println("tag_user_data : " + tagUser);
 
@@ -127,17 +127,24 @@ void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확�
     lightColor(pixels_square, purple);
 
     PlayAltarActivateVoice();
+    delay(300);
 
-    has2wifi.Send((String)(const char *)my["device_name"], "game_state", "activate");
-    has2wifi.Send((String)(const char *)my["device_name"], "device_state", "activate");
-
-    String tagger_name = (String)(const char *)tag["device_name"];
-    String tagger_group = tagger_name.substring(0, 2);
-    for (int i = 1; i < 9; ++i)
+    bool altarActivating = (String)(const char *)my["device_state"] != "activate";
+    if (altarActivating)
     {
-      String player_name = tagger_group + "P" + String(i);
-      Serial.println(player_name);
-      has2wifi.Send(player_name, "tagger_name", tagger_name);
+      has2wifi.Send((String)(const char *)my["device_name"], "game_state", "activate");
+      has2wifi.Send((String)(const char *)my["device_name"], "device_state", "activate");
+      sendCommand("page pgChipCount");
+      NeoFunc = NeoGaming;
+
+      String tagger_name = (String)(const char *)tag["device_name"];
+      String tagger_group = tagger_name.substring(0, 2);
+      for (int i = 1; i < 9; ++i)
+      {
+        String player_name = tagger_group + "P" + String(i);
+        Serial.println(player_name);
+        has2wifi.Send(player_name, "tagger_name", tagger_name);
+      }
     }
 
   // 4. 술래 카드 태그 시 조건 없이 제단에 생명 바쳐짐

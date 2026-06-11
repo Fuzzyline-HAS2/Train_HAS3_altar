@@ -28,6 +28,7 @@ void NextionReceived(String *nextion_string)
  */
 void PlayAltarActivateVoice()
 {
+    Serial.println("[Nextion] PlayAltarActivateVoice");
     sendCommand("pgAltarTag.vAudioPlay.val=1");
 }
 
