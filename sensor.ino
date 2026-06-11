@@ -61,16 +61,15 @@ void RfidLoop()
 
 /**
  * @brief 장치 이름(예: G9P1)에서 카드 역할을 고정 결정
- *        P1=술래, P2=유령, P3~P8=생존자
+ *        G9P1=술래, G9P2=유령, G9P3~G9P9=생존자
  */
 String GetRoleFromName(const String &deviceName)
 {
-  int pIdx = deviceName.indexOf('P');
-  if (pIdx < 0) return "unknown";
-  int num = deviceName.substring(pIdx + 1).toInt();
+  if (!deviceName.startsWith("G9P")) return "unknown";
+  int num = deviceName.substring(3).toInt();
   if (num == 1) return "tagger";
   if (num == 2) return "ghost";
-  if (num >= 3 && num <= 8) return "survivor";
+  if (num >= 3 && num <= 9) return "survivor";
   return "unknown";
 }
 
