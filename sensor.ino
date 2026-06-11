@@ -84,9 +84,19 @@ void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확�
 {
   String tagUser = "";
   static String cur_tag_user = "";
+  static uint32_t cur_tag_time = 0;
   for (int i = 0; i < 4; i++) // GxPx 데이터만 배열에서 추출해서 string으로 저장
     tagUser += (char)rfidData[i];
   Serial.println("tag_user_data : " + tagUser);
+
+  uint32_t now = millis();
+  if (tagUser == cur_tag_user && now - cur_tag_time < 12000)
+  {
+    Serial.println("duplicate tag ignored : " + tagUser);
+    return;
+  }
+  cur_tag_user = tagUser;
+  cur_tag_time = now;
 
   // 1. 태그한 플레이어 정보 읽어오기
   has2wifi.Receive(tagUser);
