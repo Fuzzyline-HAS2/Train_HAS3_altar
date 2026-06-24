@@ -84,6 +84,7 @@ void DataChange()
         if ((String)(const char *)my["device_state"] == "activate")
         {
             sendCommand("page pgChipCount");
+            SyncChipCount();   // 페이지 진입 시 서버값으로 최대/현재 생명 강제 반영
             NeoFunc = NeoGaming;
         }
         else if ((String)(const char *)my["device_state"] == "player_win")
@@ -121,9 +122,9 @@ void DataChange()
             sendCommand(cmd.c_str());
         }
     }
-    if((int)my["max_taken_chip"] != (int)cur["max_taken_chip"])
+    if((int)my["max_chip"] != (int)cur["max_chip"])
     {
-        cmd = "pgChipCount.vMaxChip.val=" + (String)(int)my["max_taken_chip"];
+        cmd = "pgChipCount.vMaxChip.val=" + (String)(int)my["max_chip"];
         sendCommand(cmd.c_str());
     }
     SyncLanguage();

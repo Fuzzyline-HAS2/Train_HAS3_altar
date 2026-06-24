@@ -33,6 +33,25 @@ void PlayAltarActivateVoice()
 }
 
 /**
+ * @brief pgChipCount 페이지의 칩 수치(현재/최대)를 서버값으로 강제 동기화
+ *
+ *        DataChange 의 동기화는 값이 "바뀔 때만"(change detection) 전송하므로,
+ *        값은 그대로인 채 pgChipCount 페이지로 새로 진입하면 Nextion HMI 의
+ *        설계상 기본값(최대 생명 10 등)이 그대로 보이게 된다.
+ *        페이지에 진입할 때마다 이 함수를 호출해 현재 서버값
+ *        (max_chip, taken_chip)을 다시 써주면 최대 생명 개수가
+ *        서버 설정대로 가변 표시된다.
+ */
+void SyncChipCount()
+{
+    String cmd;
+    cmd = "pgChipCount.vMaxChip.val=" + (String)(int)my["max_chip"];
+    sendCommand(cmd.c_str());
+    cmd = "pgChipCount.vSacrificeChip.val=" + (String)(int)my["taken_chip"];
+    sendCommand(cmd.c_str());
+}
+
+/**
  * @brief get 명령으로 Nextion 숫자 변수를 읽음
  *        성공시 값 반환, 실패시 -1 반환 (0x71 응답 파싱)
  */

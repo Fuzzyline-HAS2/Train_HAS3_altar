@@ -38,6 +38,7 @@ void NextionInit();
 void SyncLanguage();
 void SendCmd(String command);
 void PlayAltarActivateVoice();
+void SyncChipCount();
 
 //* =============================== Sensor =============================== *
 /**

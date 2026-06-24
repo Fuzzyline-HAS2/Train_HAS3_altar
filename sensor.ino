@@ -135,6 +135,7 @@ void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확�
       has2wifi.Send((String)(const char *)my["device_name"], "game_state", "activate");
       has2wifi.Send((String)(const char *)my["device_name"], "device_state", "activate");
       sendCommand("page pgChipCount");
+      SyncChipCount();   // 자가활성으로 페이지 진입 시 서버값(최대 생명)을 강제 반영
       NeoFunc = NeoGaming;
 
       String tagger_name = (String)(const char *)tag["device_name"];
