@@ -23,13 +23,17 @@ void NextionReceived(String *nextion_string)
 
 /**
  * @brief 제단 활성화 시 Nextion 음성 출력
- *        Nextion HMI의 pgAltarTag.vAudioPlay 변수를 1로 설정하면
- *        HMI 내 이벤트에서 "제단이 활성화되었습니다." 음성 재생
+ *        Nextion 네이티브 play 명령으로 "제단이 활성화되었습니다." 음성 재생
+ *        오디오 리소스 ID: 36=EN, 37=KO (nextion_language: 0=EN, 1=KO)
+ *        (변수 vAudioPlay.val=1 방식은 Variable 컴포넌트에 값변경 이벤트가
+ *         없어 재생이 트리거되지 않으므로 play 명령으로 변경)
  */
 void PlayAltarActivateVoice()
 {
     Serial.println("[Nextion] PlayAltarActivateVoice");
-    sendCommand("pgAltarTag.vAudioPlay.val=1");
+    int vid = 36 + nextion_language;   // 36=EN, 37=KO
+    String cmd = "play 0," + String(vid) + ",0";
+    sendCommand(cmd.c_str());
 }
 
 /**

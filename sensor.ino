@@ -126,12 +126,12 @@ void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확�
     lightColor(pixels_side, purple);
     lightColor(pixels_square, purple);
 
-    PlayAltarActivateVoice();
-    delay(300);
-
     bool altarActivating = (String)(const char *)my["device_state"] != "activate";
     if (altarActivating)
     {
+      PlayAltarActivateVoice();   // 첫 활성화 시에만 활성화 음성 재생
+      delay(300);
+
       has2wifi.Send((String)(const char *)my["device_name"], "game_state", "activate");
       has2wifi.Send((String)(const char *)my["device_name"], "device_state", "activate");
       sendCommand("page pgChipCount");
@@ -148,24 +148,28 @@ void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확�
       }
     }
 
-  // 4. 술래 카드 태그 시 조건 없이 제단에 생명 바쳐짐
-    for (int i = 0; i < NUMPIXELS_ROUND; i++)
+  // 4. 이미 활성화된 제단에 술래 카드 태그 시에만 생명 바쳐짐
+  //    (첫 활성화 태그에서는 생명을 바치지 않음)
+    if (!altarActivating)
     {
-      if (i == 0)
+      for (int i = 0; i < NUMPIXELS_ROUND; i++)
       {
-        pixels_side.clear();
-        pixels_square.clear();
-        pixels_round.clear();
+        if (i == 0)
+        {
+          pixels_side.clear();
+          pixels_square.clear();
+          pixels_round.clear();
+        }
+        lightColor(pixels_round, purple, i);
+        delay(50);
       }
-      lightColor(pixels_round, purple, i);
-      delay(50);
+
+      has2wifi.Send((String)(const char *)my["device_name"], "taken_chip", "+1");
+
+      pixels_round.clear();
+      pixels_side.clear();
+      pixels_square.clear();
     }
-
-    has2wifi.Send((String)(const char *)my["device_name"], "taken_chip", "+1");
-
-    pixels_round.clear();
-    pixels_side.clear();
-    pixels_square.clear();
 
     NeoFunc = NeoGaming;
   }
