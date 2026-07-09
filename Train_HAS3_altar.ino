@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2022
  */
 
-#define FIRMWARE_VER 13
+#define FIRMWARE_VER 14
 #define PARTITION_VER 1
 #include "Train_HAS3_altar.h"
 
