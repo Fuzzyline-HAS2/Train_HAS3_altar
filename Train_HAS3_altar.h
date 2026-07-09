@@ -3,6 +3,23 @@
 
 #include "library_and_pin.h"
 
+//============================== Telnet Debug ==============================
+class TelnetDebugConsole : public Stream {
+public:
+  void begin(unsigned long baud);
+  int available() override;
+  int read() override;
+  int peek() override;
+  void flush() override;
+  size_t write(uint8_t data) override;
+  size_t write(const uint8_t *buffer, size_t size) override;
+};
+
+extern HardwareSerial HardwareDebugSerial;
+extern TelnetDebugConsole DebugSerial;
+
+#define Serial DebugSerial
+
 //============================ Global Variable ============================
 void NeoNo();
 void (*NeoFunc)() = NeoNo;
@@ -28,6 +45,8 @@ void SettingFunc();
 void ReadyFunc();
 void ActionFunc();
 void DataChange();
+void TelnetInit();
+void TelnetRun();
 
 //=============================== Display ================================
 int nextion_language = 1;  // 0=EN, 1=KO (기본값 KO)
