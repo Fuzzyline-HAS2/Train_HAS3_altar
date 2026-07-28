@@ -1,8 +1,5 @@
 #include "Train_HAS3_altar.h"
 
-/**
- * @brief DB gamestate가 setting 일 때 한번동작하는 코드
- */
 void SettingFunc()
 {
     activate_bool = false;
@@ -13,10 +10,6 @@ void SettingFunc()
     lightColor(pixels_square, white);
 }
 
-/**
- * @brief DB gamestate가 ready 일 때 한번동작하는 코드
- */
-
 void ReadyFunc()
 {
     activate_bool = false;
@@ -24,9 +17,6 @@ void ReadyFunc()
     NeoFunc = NeoBeforeTagger;
 }
 
-/**
- * @brief DB gamestate가 activate 일 때 반복동작하는 코드
- */
 void ActivateFunc()
 {
     RfidLoop();
@@ -39,96 +29,142 @@ void EnterAltarBlinkState()
     activate_bool = true;
 }
 
+String JsonStringValue(JsonVariant value)
+{
+    const char *text = value.as<const char *>();
+    return text ? String(text) : String("");
+}
+
+void LogStringChange(const char *name, const String &oldValue, const String &newValue)
+{
+    Serial.print("[DataChange] ");
+    Serial.print(name);
+    Serial.print(": ");
+    Serial.print(oldValue.length() ? oldValue : "(empty)");
+    Serial.print(" -> ");
+    Serial.println(newValue.length() ? newValue : "(empty)");
+}
+
+void LogIntChange(const char *name, int oldValue, int newValue)
+{
+    Serial.print("[DataChange] ");
+    Serial.print(name);
+    Serial.print(": ");
+    Serial.print(oldValue);
+    Serial.print(" -> ");
+    Serial.println(newValue);
+}
+
 void DataChange()
 {
     if (!(const char *)my["device_name"])
     {
-        Serial.println("[DataChange] 서버 데이터 없음, 스킵");
+        Serial.println("[DataChange] no server data, skipped");
         return;
     }
 
     static StaticJsonDocument<1000> cur;
 
     String cmd;
+    String oldGameState = JsonStringValue(cur["game_state"]);
+    String newGameState = JsonStringValue(my["game_state"]);
+    String oldDeviceState = JsonStringValue(cur["device_state"]);
+    String newDeviceState = JsonStringValue(my["device_state"]);
+    int oldBrightness = (int)cur["brightness"];
+    int newBrightness = (int)my["brightness"];
+    int oldTakenChip = (int)cur["taken_chip"];
+    int newTakenChip = (int)my["taken_chip"];
+    int oldMaxChip = (int)cur["max_chip"];
+    int newMaxChip = (int)my["max_chip"];
 
-    bool brightness_changed = ((int)my["brightness"] != (int)cur["brightness"]);
+    bool brightnessChanged = (newBrightness != oldBrightness);
 
-    if ((String)(const char *)my["game_state"] != (String)(const char *)cur["game_state"])
+    if (newGameState != oldGameState)
     {
-        if ((String)(const char *)my["game_state"] == "setting")
+        LogStringChange("game_state", oldGameState, newGameState);
+
+        if (newGameState == "setting")
         {
-            if (brightness_changed) applyBrightness();
+            if (brightnessChanged) applyBrightness();
             SettingFunc();
-            EnterAltarBlinkState();
-            has2wifi.Send((String)(const char *)my["device_name"], "game_state", "activate");
-            has2wifi.Send((String)(const char *)my["device_name"], "device_state", "blink");
         }
-        else if ((String)(const char *)my["game_state"] == "ready")
+        else if (newGameState == "ready")
         {
-            if (brightness_changed) applyBrightness();
+            if (brightnessChanged) applyBrightness();
             ReadyFunc();
         }
-        else if ((String)(const char *)my["game_state"] == "activate")
+        else if (newGameState == "activate")
         {
-            if (brightness_changed) applyBrightness();
+            if (brightnessChanged) applyBrightness();
             activate_bool = true;
         }
     }
-    else if (brightness_changed)
+    else if (brightnessChanged)
     {
         applyBrightness();
     }
 
-    if ((String)(const char *)my["device_state"] != (String)(const char *)cur["device_state"])
+    if (brightnessChanged)
     {
-        if ((String)(const char *)my["device_state"] == "activate")
+        LogIntChange("brightness", oldBrightness, newBrightness);
+    }
+
+    if (newDeviceState != oldDeviceState)
+    {
+        LogStringChange("device_state", oldDeviceState, newDeviceState);
+
+        if (newDeviceState == "activate")
         {
             sendCommand("page pgChipCount");
-            SyncChipCount();   // 페이지 진입 시 서버값으로 최대/현재 생명 강제 반영
+            SyncChipCount();
             NeoFunc = NeoGaming;
         }
-        else if ((String)(const char *)my["device_state"] == "player_win")
+        else if (newDeviceState == "player_win")
         {
             sendCommand("page pgTaggerLose");
             NeoFunc = NeoLose;
         }
-        else if ((String)(const char *)my["device_state"] == "player_lose")
+        else if (newDeviceState == "player_lose")
         {
             sendCommand("page pgTaggerWin");
             NeoFunc = NeoWin;
         }
-        else if ((String)(const char *)my["device_state"] == "blink")
+        else if (newDeviceState == "blink")
         {
             EnterAltarBlinkState();
         }
-        else if ((String)(const char *)my["device_state"] == "github")
+        else if (newDeviceState == "github")
         {
+            Serial.println("[DataChange] OTA check requested");
             ota.check();
         }
     }
 
-    if((int)my["taken_chip"] != (int)cur["taken_chip"])
+    if (newTakenChip != oldTakenChip)
     {
-        int takenChip = (int)my["taken_chip"];
+        LogIntChange("taken_chip", oldTakenChip, newTakenChip);
 
-        cmd = "pgChipCount.vSacrificeChip.val=" + String(takenChip);
+        cmd = "pgChipCount.vSacrificeChip.val=" + String(newTakenChip);
         sendCommand(cmd.c_str());
         SyncLanguage();
 
-        if (takenChip >= 1 && takenChip <= 10)
+        if (newTakenChip >= 1 && newTakenChip <= 10)
         {
-            int vid = takenChip * 2 + nextion_language;
+            int vid = newTakenChip * 2 + nextion_language;
             cmd = "play 0," + String(vid) + ",0";
             sendCommand(cmd.c_str());
         }
     }
-    if((int)my["max_chip"] != (int)cur["max_chip"])
+
+    if (newMaxChip != oldMaxChip)
     {
-        cmd = "pgChipCount.vMaxChip.val=" + (String)(int)my["max_chip"];
+        LogIntChange("max_chip", oldMaxChip, newMaxChip);
+        cmd = "pgChipCount.vMaxChip.val=" + String(newMaxChip);
         sendCommand(cmd.c_str());
     }
+
     SyncLanguage();
 
-    Serial.println("Data Change");
+    Serial.println("[DataChange] done");
     cur = my;
 }
