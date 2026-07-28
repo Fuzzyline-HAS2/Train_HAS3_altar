@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2022
  */
 
-#define FIRMWARE_VER 17
+#define FIRMWARE_VER 18
 #define PARTITION_VER 1
 #include "Train_HAS3_altar.h"
 #include <esp_task_wdt.h>
