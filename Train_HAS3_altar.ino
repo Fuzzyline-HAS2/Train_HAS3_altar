@@ -11,6 +11,7 @@
 #define FIRMWARE_VER 16
 #define PARTITION_VER 1
 #include "Train_HAS3_altar.h"
+#include <esp_task_wdt.h>
 
 //************************************************ Core1 ********************************************************************
 /**
@@ -51,6 +52,13 @@ void setup()
   TempleInit();
   DataChange();
   NextionInit();
+  esp_task_wdt_deinit();
+  {
+    esp_task_wdt_config_t wdt_cfg = { .timeout_ms = 12000, .idle_core_mask = 0, .trigger_panic = true };
+    esp_task_wdt_init(&wdt_cfg);
+  }
+  esp_task_wdt_add(NULL);
+  Serial.println("[WDT] 12s watchdog started");
 }
 
 /**
@@ -58,6 +66,7 @@ void setup()
  */
 void loop()
 {
+  esp_task_wdt_reset();
   TelnetRun();
   TimerRun();
   NeoFunc();

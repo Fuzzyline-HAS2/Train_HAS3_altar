@@ -136,7 +136,9 @@ void DataChange()
         else if (newDeviceState == "github")
         {
             Serial.println("[DataChange] OTA check requested");
+            esp_task_wdt_delete(NULL);
             ota.check();
+            esp_task_wdt_add(NULL);
         }
     }
 
