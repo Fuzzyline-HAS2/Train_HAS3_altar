@@ -6,7 +6,7 @@ void SensorInit()
   // Neopixel init
   pixels_square.begin();
   pixels_round.begin();
-  pixels_side.begin();
+  // pixels_side.begin();
 
   // Rfid init
   RfidInit();
@@ -111,19 +111,19 @@ void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확�
     NeoFunc = NeoNo;
 
     pixels_round.clear();
-    pixels_side.clear();
+    // pixels_side.clear();
     pixels_square.clear();
     delay(300);
     lightColor(pixels_round, purple);
-    lightColor(pixels_side, purple);
+    // lightColor(pixels_side, purple);
     lightColor(pixels_square, purple);
     delay(300);
     pixels_round.clear();
-    pixels_side.clear();
+    // pixels_side.clear();
     pixels_square.clear();
     delay(300);
     lightColor(pixels_round, purple);
-    lightColor(pixels_side, purple);
+    // lightColor(pixels_side, purple);
     lightColor(pixels_square, purple);
 
     bool altarActivating = (String)(const char *)my["device_state"] != "activate";
@@ -156,7 +156,7 @@ void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확�
       {
         if (i == 0)
         {
-          pixels_side.clear();
+          // pixels_side.clear();
           pixels_square.clear();
           pixels_round.clear();
         }
@@ -167,7 +167,7 @@ void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확�
       has2wifi.Send((String)(const char *)my["device_name"], "taken_chip", "+1");
 
       pixels_round.clear();
-      pixels_side.clear();
+      // pixels_side.clear();
       pixels_square.clear();
     }
 
@@ -213,10 +213,10 @@ void applyBrightness()
     brightness = map(b, 0, 100, 0, 255);
   pixels_square.setBrightness(brightness);
   pixels_round.setBrightness(brightness);
-  pixels_side.setBrightness(brightness);
+  // pixels_side.setBrightness(brightness);
   pixels_square.show();
   pixels_round.show();
-  pixels_side.show();
+  // pixels_side.show();
 }
 
 void lightColor(Adafruit_NeoPixel &pixels, int color[3])
@@ -251,7 +251,7 @@ void NeoBeforeTagger()
   breathe_direction ? breathe++ : breathe--;
 
   lightColor(pixels_round, white);
-  lightRgb(pixels_side, breathe, breathe, breathe);
+  // lightRgb(pixels_side, breathe, breathe, breathe);
   lightColor(pixels_square, red);
 
   if (breathe == 0)
@@ -272,7 +272,7 @@ void NeoTagger()
 
   breathe_direction_2 ? breathe_2++ : breathe_2--;
 
-  lightRgb(pixels_side, breathe_2, breathe_2, breathe_2);
+  // lightRgb(pixels_side, breathe_2, breathe_2, breathe_2);
 
   if (breathe_2 == 0)
   {
@@ -292,7 +292,7 @@ void NeoTaggerTag()
   static int tag_neo = 0;
 
   pixels_round.clear();
-  pixels_side.clear();
+  // pixels_side.clear();
 
   lightColor(pixels_round, purple, tag_neo);
 
@@ -301,7 +301,7 @@ void NeoTaggerTag()
     tag_neo = 0;
 
     pixels_round.clear();
-    pixels_side.clear();
+    // pixels_side.clear();
     pixels_square.clear();
   }
 }
@@ -314,14 +314,14 @@ void NeoAfterTagger()
   {
     after_tagger_neo_bool = false;
     pixels_round.clear();
-    pixels_side.clear();
+    // pixels_side.clear();
     pixels_square.clear();
   }
   else
   {
     after_tagger_neo_bool = true;
     lightColor(pixels_round, purple);
-    lightColor(pixels_side, purple);
+    // lightColor(pixels_side, purple);
     lightColor(pixels_square, purple);
   }
 }
@@ -335,7 +335,7 @@ void NeoGaming()
   breathe_direction ? breathe++ : breathe--;
 
   lightRgb(pixels_round, breathe, 0, breathe);
-  lightRgb(pixels_side, breathe, 0, breathe);
+  // lightRgb(pixels_side, breathe, 0, breathe);
   NeoArrow();
 
   if (breathe == 0)
@@ -381,21 +381,21 @@ void NeoWin()
   {
     win_neo_bool = false;
     lightRgb(pixels_round, 0, 0, win_neo);
-    lightRgb(pixels_side, 0, 0, win_neo);
+    // lightRgb(pixels_side, 0, 0, win_neo);
     lightRgb(pixels_square, 0, 0, win_neo);
   }
   else
   {
     win_neo_bool = true;
     pixels_round.clear();
-    pixels_side.clear();
+    // pixels_side.clear();
     pixels_square.clear();
   }
 
   if (win_neo_delay <= 300)
   {
     pixels_round.clear();
-    pixels_side.clear();
+    // pixels_side.clear();
     pixels_square.clear();
 
     NeoFunc = NeoNo;
@@ -416,21 +416,21 @@ void NeoLose()
   {
     lose_neo_bool = false;
     lightRgb(pixels_round, lose_neo, 0, 0);
-    lightRgb(pixels_side, lose_neo, 0, 0);
+    // lightRgb(pixels_side, lose_neo, 0, 0);
     lightRgb(pixels_square, lose_neo, 0, 0);
   }
   else
   {
     lose_neo_bool = true;
     pixels_round.clear();
-    pixels_side.clear();
+    // pixels_side.clear();
     pixels_square.clear();
   }
 
   if (lose_neo_delay <= 300)
   {
     pixels_round.clear();
-    pixels_side.clear();
+    // pixels_side.clear();
     pixels_square.clear();
 
     NeoFunc = NeoNo;

@@ -6,7 +6,7 @@ void SettingFunc()
     sendCommand("page pgSetting");
     NeoFunc = NeoNo;
     lightColor(pixels_round, white);
-    lightColor(pixels_side, white);
+    // lightColor(pixels_side, white);
     lightColor(pixels_square, white);
 }
 
