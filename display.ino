@@ -31,9 +31,9 @@ void NextionReceived(String *nextion_string)
 void PlayAltarActivateVoice()
 {
     Serial.println("[Nextion] PlayAltarActivateVoice");
-    int vid = 36 + nextion_language;   // 36=EN, 37=KO
-    String cmd = "play 0," + String(vid) + ",0";
-    sendCommand(cmd.c_str());
+    // int vid = 36 + nextion_language;   // 36=EN, 37=KO
+    // String cmd = "play 0," + String(vid) + ",0";
+    // sendCommand(cmd.c_str());
 }
 
 /**
