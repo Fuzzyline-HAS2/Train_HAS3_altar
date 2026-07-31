@@ -150,12 +150,12 @@ void DataChange()
         sendCommand(cmd.c_str());
         SyncLanguage();
 
-        if (newTakenChip >= 1 && newTakenChip <= 10)
-        {
-            int vid = newTakenChip * 2 + nextion_language;
-            cmd = "play 0," + String(vid) + ",0";
-            sendCommand(cmd.c_str());
-        }
+        // if (newTakenChip >= 1 && newTakenChip <= 10)
+        // {
+        //     int vid = newTakenChip * 2 + nextion_language;
+        //     cmd = "play 0," + String(vid) + ",0";
+        //     sendCommand(cmd.c_str());
+        // }
     }
 
     if (newMaxChip != oldMaxChip)
