@@ -1,3 +1,5 @@
+#include <SecureOTA.h>
+
 /**
  * @file Train_HAS3_altar.ino
  * @author YuBin Kim
@@ -8,7 +10,7 @@
  * @copyright Copyright (c) 2022
  */
 
-#define FIRMWARE_VER 18
+#define FIRMWARE_VER 19
 #define PARTITION_VER 1
 #include "Train_HAS3_altar.h"
 #include <esp_task_wdt.h>
