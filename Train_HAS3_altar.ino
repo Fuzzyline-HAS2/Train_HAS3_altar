@@ -10,7 +10,7 @@
  * @copyright Copyright (c) 2022
  */
 
-#define FIRMWARE_VER 20
+#define FIRMWARE_VER 21
 #define PARTITION_VER 1
 #include "Train_HAS3_altar.h"
 #include <esp_task_wdt.h>
@@ -22,7 +22,7 @@
 void TempleInit()
 {
   // has2wifi.Setup("KT_GiGA_6C64", "ed46zx1198");                     j// 와이파이 세팅
-  has2wifi.Setup("badland_shoot", "Code3824@");
+  has2wifi.Setup("academy", "Code3824@");
   TelnetInit();
   ota.setLogStream(Serial);
   ota.setOnSuccess([]() {
