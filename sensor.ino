@@ -293,7 +293,7 @@ void NeoGaming()
   delay(100);
   lightColor(pixels_round, white);
   // lightColor(pixels_side, white);
-  lightColor(pixels_square, white);
+  lightColor(pixels_square, purple);
 }
 
 // void NeoTakenChip()
