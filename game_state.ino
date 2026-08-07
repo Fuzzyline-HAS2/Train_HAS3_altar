@@ -63,7 +63,7 @@ void DataChange()
         return;
     }
 
-    static StaticJsonDocument<1000> cur;
+    static StaticJsonDocument<2048> cur;
 
     String cmd;
     String oldGameState = JsonStringValue(cur["game_state"]);

@@ -9,17 +9,8 @@ void TimerInit()
  */
 void TimerRun()
 {
-  rfid_timer.run();
   nsec_tag_timer.run();
   wifi_timer.run();
-}
-
-/**
- * @brief RFID가 연속적으로 찍히지 않게 하기위해 플래그를 줌
- */
-void RfidTagTimerFunc()
-{
-  rfid_tag = false;
 }
 
 void WifiTimerFunc()

@@ -6,7 +6,9 @@ void SensorInit()
   // Neopixel init
   pixels_square.begin();
   pixels_round.begin();
-  // pixels_side.begin();
+  pixels_side.begin();
+  pixels_side.clear();
+  pixels_side.show();
 
   // Rfid init
   RfidInit();
@@ -34,27 +36,27 @@ void RfidInit(void)
  */
 void RfidLoop()
 {
-  if (!rfid_tag)
-  {
-    rfid_tag = true;
-    rfid_timer_id = rfid_timer.setTimeout(1000, RfidTagTimerFunc);
-  }
-  else
-  {
-    return;
-  }
-  uint8_t uid[] = {0, 0, 0, 0, 0, 0, 0}; // Buffer to store the returned UID
-  uint8_t uidLength;                     // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
   uint8_t data[32];
-  char user_data[5];
   byte pn532_packetbuffer11[64];
   pn532_packetbuffer11[0] = 0x00;
+  static bool cardPresent = false; // 이번 접촉을 이미 처리했는지 (카드를 뗄 때까지 재처리 방지)
+
   if (nfc.sendCommandCheckAck(pn532_packetbuffer11, 1))
   { // rfid 통신 가능한 상태인지 확인
     if (nfc.startPassiveTargetIDDetection(PN532_MIFARE_ISO14443A))
-    {                                    // rfid에 tag 찍혔는지 확인용 //데이터 들어오면 uid정보 가져오기
-      if (nfc.ntag2xx_ReadPage(7, data)) // ntag 데이터에 접근해서 불러와서 data행열에 저장
-        CardChecking(data);
+    { // rfid에 tag 찍혔는지 확인용
+      if (!cardPresent)
+      { // 새로 올라온 접촉일 때만 처리
+        if (nfc.ntag2xx_ReadPage(7, data)) // ntag 데이터에 접근해서 불러와서 data행열에 저장
+        {
+          cardPresent = true;
+          CardChecking(data);
+        }
+      }
+    }
+    else
+    {
+      cardPresent = false; // 카드가 리더에서 벗어남 → 다음 태그 받을 준비
     }
   }
 }
@@ -83,29 +85,15 @@ String GetRoleFromName(const String &deviceName)
 void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확인용
 {
   String tagUser = "";
-  static String cur_tag_user = "";
-  static uint32_t cur_tag_time = 0;
   for (int i = 0; i < 4; i++)
     tagUser += (char)rfidData[i];
   Serial.println("tag_user_data : " + tagUser);
 
-  uint32_t now = millis();
-  if (tagUser == cur_tag_user && now - cur_tag_time < 12000)
-  {
-    Serial.println("duplicate tag ignored : " + tagUser);
-    return;
-  }
-  cur_tag_user = tagUser;
-  cur_tag_time = now;
-
-  // 1. 태그한 플레이어 정보 읽어오기
-  has2wifi.Receive(tagUser);
-
-  // 2. 장치 이름 기반으로 역할 고정 결정
+  // 1. 장치 이름 기반으로 역할 고정 결정
   String tagRole = GetRoleFromName(tagUser);
   Serial.println("tag_role : " + tagRole);
 
-  // 3. 술래 카드 태그 시 조건 없이 제단 활성화
+  // 2. 술래 카드 태그 시 조건 없이 제단 활성화
   if (tagRole == "tagger")
   {
     NeoFunc = NeoNo;
@@ -137,18 +125,9 @@ void CardChecking(uint8_t rfidData[32]) // 어떤 카드가 들어왔는지 확�
       sendCommand("page pgChipCount");
       SyncChipCount();   // 자가활성으로 페이지 진입 시 서버값(최대 생명)을 강제 반영
       NeoFunc = NeoGaming;
-
-      String tagger_name = (String)(const char *)tag["device_name"];
-      String tagger_group = tagger_name.substring(0, 2);
-      for (int i = 1; i < 9; ++i)
-      {
-        String player_name = tagger_group + "P" + String(i);
-        Serial.println(player_name);
-        has2wifi.Send(player_name, "tagger_name", tagger_name);
-      }
     }
 
-  // 4. 이미 활성화된 제단에 술래 카드 태그 시에만 생명 바쳐짐
+  // 3. 이미 활성화된 제단에 술래 카드 태그 시에만 생명 바쳐짐
   //    (첫 활성화 태그에서는 생명을 바치지 않음)
     if (!altarActivating)
     {
@@ -267,24 +246,7 @@ void NeoBeforeTagger()
 void NeoTagger()
 {
   delay(100);
-  static int breathe_2 = 0;
-  static bool breathe_direction_2 = true;
-
-  breathe_direction_2 ? breathe_2++ : breathe_2--;
-
-  // lightRgb(pixels_side, breathe_2, breathe_2, breathe_2);
-
-  if (breathe_2 == 0)
-  {
-    breathe_direction_2 = true;
-  }
-  else if (breathe_2 == 20)
-  {
-    breathe_direction_2 = false;
-  }
-
-  pixels_round.clear();
-  NeoArrow();
+  lightColor(pixels_square, white);
 }
 
 void NeoTaggerTag()
@@ -329,23 +291,9 @@ void NeoAfterTagger()
 void NeoGaming()
 {
   delay(100);
-  static int breathe = 0;
-  static bool breathe_direction = true;
-
-  breathe_direction ? breathe++ : breathe--;
-
-  lightRgb(pixels_round, breathe, 0, breathe);
-  // lightRgb(pixels_side, breathe, 0, breathe);
-  NeoArrow();
-
-  if (breathe == 0)
-  {
-    breathe_direction = true;
-  }
-  else if (breathe == 20)
-  {
-    breathe_direction = false;
-  }
+  lightColor(pixels_round, white);
+  // lightColor(pixels_side, white);
+  lightColor(pixels_square, white);
 }
 
 // void NeoTakenChip()
@@ -436,144 +384,4 @@ void NeoLose()
     NeoFunc = NeoNo;
   }
   delay(lose_neo_delay);
-}
-
-void NeoArrow()
-{
-  static int arrow_pattern = 0;
-
-  switch (arrow_pattern)
-  {
-  case 0:
-    pixels_square.clear();
-    break;
-
-  case 1:
-    arrow_neo_line_1 = 0;
-    arrow_neo_line_2 = 16;
-    arrow_neo_line_3 = 0;
-    break;
-
-  case 2:
-    arrow_neo_line_1 = 1;
-    arrow_neo_line_2 = 24;
-    arrow_neo_line_3 = 1;
-    break;
-
-  case 3:
-    arrow_neo_line_1 = 3;
-    arrow_neo_line_2 = 12;
-    arrow_neo_line_3 = 3;
-    break;
-
-  case 4:
-    arrow_neo_line_1 = 6;
-    arrow_neo_line_2 = 6;
-    arrow_neo_line_3 = 6;
-    break;
-
-  case 5:
-    arrow_neo_line_1 = 12;
-    arrow_neo_line_2 = 3;
-    arrow_neo_line_3 = 12;
-    break;
-
-  case 6:
-    arrow_neo_line_1 = 24;
-    arrow_neo_line_2 = 1;
-    arrow_neo_line_3 = 24;
-    break;
-
-  case 7:
-    arrow_neo_line_1 = 16;
-    arrow_neo_line_2 = 0;
-    arrow_neo_line_3 = 16;
-    break;
-
-  default:
-    break;
-  }
-
-  if (++arrow_pattern > 7)
-  {
-    arrow_pattern = 0;
-  }
-
-  NeoArrowSet(1, arrow_neo_line_1);
-  // NeoArrowSet(2, arrow_neo_line_2);
-  NeoArrowSet(3, arrow_neo_line_3);
-  pixels_square.show();
-}
-
-void NeoArrowSet(int arrow_neo_line_num, int arrow_neo_line)
-{
-  int neo_num = 0;
-
-  if (arrow_neo_line_num == 1)
-  {
-    neo_num = 0;
-  }
-  else if (arrow_neo_line_num == 2)
-  {
-    neo_num = 5;
-  }
-  else if (arrow_neo_line_num == 3)
-  {
-    neo_num = 10;
-  }
-
-  switch (arrow_neo_line)
-  {
-  case 0:
-    pixels_square.setPixelColor(neo_num + 1, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 2, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 3, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 4, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 5, 0, 0, 0);
-    break;
-  case 1:
-    pixels_square.setPixelColor(neo_num + 1, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 2, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 3, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 4, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 5, 20, 20, 20);
-    break;
-  case 3:
-    pixels_square.setPixelColor(neo_num + 1, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 2, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 3, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 4, 20, 20, 20);
-    pixels_square.setPixelColor(neo_num + 5, 20, 20, 20);
-    break;
-  case 6:
-    pixels_square.setPixelColor(neo_num + 1, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 2, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 3, 20, 20, 20);
-    pixels_square.setPixelColor(neo_num + 4, 20, 20, 20);
-    pixels_square.setPixelColor(neo_num + 5, 0, 0, 0);
-    break;
-  case 12:
-    pixels_square.setPixelColor(neo_num + 1, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 2, 20, 20, 20);
-    pixels_square.setPixelColor(neo_num + 3, 20, 20, 20);
-    pixels_square.setPixelColor(neo_num + 4, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 5, 0, 0, 0);
-    break;
-  case 24:
-    pixels_square.setPixelColor(neo_num + 1, 20, 20, 20);
-    pixels_square.setPixelColor(neo_num + 2, 20, 20, 20);
-    pixels_square.setPixelColor(neo_num + 3, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 4, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 5, 0, 0, 0);
-    break;
-  case 16:
-    pixels_square.setPixelColor(neo_num + 1, 20, 20, 20);
-    pixels_square.setPixelColor(neo_num + 2, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 3, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 4, 0, 0, 0);
-    pixels_square.setPixelColor(neo_num + 5, 0, 0, 0);
-    break;
-  default:
-    break;
-  }
 }
